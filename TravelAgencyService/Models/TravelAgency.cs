@@ -1,30 +1,35 @@
-﻿namespace TravelAgencyService;
+using TravelAgencyService.AbstractClasses;
+using TravelAgencyService.Services;
 
-class Execute: ITravelAgency
+namespace TravelAgencyService.Models;
+
+class TravelAgency: AbstractTravelAgency
 {
     private static ActionSelectorService _displaySelectorService;
+    private AgencyOperationsService _agencyOperation;
 
     public override void Run()
     {
-        AgencyModel travelAgency = new AgencyModel();
-        bool exit = false;
+        var travelAgency = new AgencyModel();
+        var exit = false;
 
         while (!exit)
         {
             _displaySelectorService = new ActionSelectorService();
+            _agencyOperation = new AgencyOperationsService();
             _displaySelectorService.DisplayMenu();
             string choice = Console.ReadLine();
-
+            
             switch (choice)
             {
                 case "1":
-                    new AgencyOperationsService().BookTicket(travelAgency);
+                   _agencyOperation.BookTicket(travelAgency);
                     break;
                 case "2":
-                    new AgencyOperationsService().CancelBooking(travelAgency);
+                    _agencyOperation.CancelBooking(travelAgency);
                     break;
                 case "3":
-                    new AgencyOperationsService().DisplayBookings(travelAgency);
+                    _agencyOperation.DisplayBookings(travelAgency);
                     break;
                 case "4":
                     exit = true;

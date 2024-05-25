@@ -1,4 +1,4 @@
-namespace TravelAgencyService;
+namespace TravelAgencyService.Services;
 
 public class ActionSelectorService
 {
