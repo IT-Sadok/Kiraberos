@@ -18,7 +18,7 @@ class TravelAgency: AbstractTravelAgency
             _displaySelectorService = new ActionSelectorService();
             _agencyOperation = new AgencyOperationsService();
             _displaySelectorService.DisplayMenu();
-            string choice = Console.ReadLine();
+            var choice = Console.ReadLine();
             
             switch (choice)
             {

@@ -8,7 +8,7 @@ public class AgencyOperationsService
     public void BookTicket(AgencyModel travelAgency)
     {
         Console.Write("Enter the name of the destination: ");
-        string destination = Console.ReadLine();
+        var destination = Console.ReadLine();
             try
             {
                 travelAgency.BookTicket(destination);
@@ -23,21 +23,16 @@ public class AgencyOperationsService
     public void CancelBooking(AgencyModel travelAgency)
     {
         Console.Write("Enter the name of the destination to cancel the reservation: ");
-        string destination = Console.ReadLine();
-            if (travelAgency.CancelBooking(destination))
-            {
-                Console.WriteLine("Reservation canceled.");
-            }
-            else
-            {
-                Console.WriteLine("Reservation(s) not found.");
-            }
+        var destination = Console.ReadLine();
+        Console.WriteLine(destination != null && travelAgency.CancelBooking(destination)
+            ? "Reservation canceled."
+            : "Reservation(s) not found.");
     }
 
     public void DisplayBookings(AgencyModel travelAgency)
     {
         var bookings = travelAgency.GetAllBookings();
-            if (!bookings.Any())
+            if (bookings.Count == 0)
             {
                 Console.WriteLine("There are no current bookings");
                 return;
@@ -46,7 +41,8 @@ public class AgencyOperationsService
         Console.WriteLine("Current reservations:");
         foreach (var destination in bookings)
         {
-            Console.WriteLine($"{destination.Name}: {destination.CurrentBookings} destination(s) booked.");
+            if (destination != null)
+                Console.WriteLine($"{destination?.Name}: {destination.CurrentBookings} destination(s) booked.");
         }
     }
 }

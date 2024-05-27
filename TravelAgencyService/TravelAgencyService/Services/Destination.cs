@@ -10,7 +10,7 @@ namespace TravelAgencyService.Services;
         {
             if (CurrentBookings >= MaxBookings)
             {
-                throw new ExceptionMgmt.InvalidDestinationException("There are no available reservations for this trip. Please, try again later.");
+                throw new InvalidDestinationException("There are no available reservations for this trip. Please, try again later.");
             }
             CurrentBookings++;
         }
