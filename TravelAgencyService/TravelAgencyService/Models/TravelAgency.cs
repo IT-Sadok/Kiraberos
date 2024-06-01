@@ -5,21 +5,19 @@ namespace TravelAgencyService.Models;
 
 class TravelAgency: AbstractTravelAgency
 {
-    private static ActionSelectorService _displaySelectorService;
-    private AgencyOperationsService _agencyOperation;
+    private static ConsoleService? _consoleService;
+    private AgencyOperationsService? _agencyOperation;
 
     public override void Run()
     {
         var travelAgency = new AgencyModel();
         var exit = false;
+        _consoleService = new ConsoleService();
+        _agencyOperation = new AgencyOperationsService(_consoleService);
 
         while (!exit)
         {
-            _displaySelectorService = new ActionSelectorService();
-            _agencyOperation = new AgencyOperationsService();
-            _displaySelectorService.DisplayMenu();
-            var choice = Console.ReadLine();
-            
+            var choice = _consoleService.GetChoice();
             switch (choice)
             {
                 case "1":

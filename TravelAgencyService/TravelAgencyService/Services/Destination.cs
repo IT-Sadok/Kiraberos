@@ -1,14 +1,22 @@
 namespace TravelAgencyService.Services;
 
-    public class Destination(string name, int maxBookings)
+    public class Destination
     {
-        public string Name { get; } = name;
-        private int MaxBookings { get; } = maxBookings;
+        public string Name { get; }
+        private readonly int _maxBookings;
         public int CurrentBookings { get; private set; } = 0;
+
+
+        public Destination(string name, int maxBookings)
+        {
+            Name = name;
+            _maxBookings = maxBookings;
+
+        }
 
         public void BookTicket()
         {
-            if (CurrentBookings >= MaxBookings)
+            if (CurrentBookings >= _maxBookings)
             {
                 throw new InvalidDestinationException("There are no available reservations for this trip. Please, try again later.");
             }
