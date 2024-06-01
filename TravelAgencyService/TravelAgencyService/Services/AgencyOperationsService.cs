@@ -36,17 +36,5 @@ public class AgencyOperationsService
     {
         var bookings = travelAgency.GetAllBookings();
         _consoleService.ShowBookings(bookings);
-            if (bookings.Count == 0)
-            {
-                Console.WriteLine("There are no current bookings");
-                return;
-            }
-
-        Console.WriteLine("Current reservations:");
-        foreach (var destination in bookings)
-        {
-            if (destination != null)
-                Console.WriteLine($"{destination?.Name}: {destination.CurrentBookings} destination(s) booked.");
-        }
     }
 }

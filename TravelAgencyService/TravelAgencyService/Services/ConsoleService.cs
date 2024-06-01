@@ -19,9 +19,19 @@ public class ConsoleService
         Console.WriteLine(message);
     }
 
-    public void ShowBookings(List<Destination> bookings)
+    public void ShowBookings(List<Destination?> bookings)
     {
-        
+        if (bookings.Count == 0)
+        {
+            ShowMessage("There are no current bookings");
+        }
+
+        ShowMessage("Current reservations:");
+        foreach (var destination in bookings)
+        {
+            if (destination != null)
+               ShowMessage($"{destination.Name}: {destination.CurrentBookings} destination(s) booked.");
+        }
     }
     
     private void DisplayMenu()
