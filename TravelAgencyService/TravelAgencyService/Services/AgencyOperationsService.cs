@@ -12,16 +12,33 @@ public class AgencyOperationsService
     }
     public void BookTicket(AgencyModel travelAgency)
     {
-        var destination = _consoleService.GetDestination();
+        const int maxRetryAttempts = 3;
+        const int delayMilliseconds = 1000;
+        var retryAttempts = 0;
+
+        while (retryAttempts < maxRetryAttempts)
+        {
+            var destination = _consoleService.GetDestination();
             try
             {
                 if (destination != null) travelAgency.BookTicket(destination);
                 _consoleService.ShowMessage("Booking is successful.");
+                break;
             }
             catch (Exception ex)
             {
-                _consoleService.ShowMessage(ex.Message);
-            }
+                _consoleService.ShowMessage($"Attempt {retryAttempts + 1} failed: {ex.Message}");
+                retryAttempts++;
+                if (retryAttempts < maxRetryAttempts)
+                {
+                    Thread.Sleep(delayMilliseconds);
+                }
+                else
+                {
+                    _consoleService.ShowMessage("All attempts failed. Booking was not successful.");
+                }
+            }   
+        }
     }
 
     public void CancelBooking(AgencyModel travelAgency)

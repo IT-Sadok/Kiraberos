@@ -25,12 +25,14 @@ public class ConsoleService
         {
             ShowMessage("There are no current bookings");
         }
-
-        ShowMessage("Current reservations:");
-        foreach (var destination in bookings)
+        else
         {
-            if (destination != null)
-               ShowMessage($"{destination.Name}: {destination.CurrentBookings} destination(s) booked.");
+            ShowMessage("Current reservations:");
+            foreach (var destination in bookings)
+            {
+                if (destination != null)
+                    ShowMessage($"{destination.Name}: {destination.CurrentBookings} destination(s) booked.");
+            }   
         }
     }
     
