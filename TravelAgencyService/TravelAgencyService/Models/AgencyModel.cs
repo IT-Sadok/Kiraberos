@@ -12,7 +12,10 @@ public class AgencyModel
         new Destination("Norway", 2),
         new Destination("New Zealand", 3)
     ];
-    public void BookTicket(string destinationName)
+
+    private readonly JsonServiceManager _jsonServiceManager = new();
+
+    public void BookTicket(string destinationName, int qty)
     {
         var destination = FindDestination(destinationName);
 
@@ -20,19 +23,23 @@ public class AgencyModel
             {
                 throw new InvalidDestinationException("Wrong destination. Please, choose the right one.");
             }
-
-        destination.BookTicket();
+            _jsonServiceManager.SaveBookingToJson(destination, qty, true); 
     }
 
-    public bool CancelBooking(string destinationName)
+    public bool CancelBooking(string destinationName, int qty)
     {
         var destination = FindDestination(destinationName);
-        return destination != null && destination.CancelBooking();
+        if (destination == null)
+        {
+            return false;
+        }
+        _jsonServiceManager.SaveBookingToJson(destination, qty, false);
+        return true;
     }
 
-    public List<Destination?> GetAllBookings()
+    public Dictionary<string, int> GetAllBookings()
     {
-        return _destinations.Where(d => d is { CurrentBookings: > 0 }).ToList();
+        return _jsonServiceManager.LoadBookings();
     }
 
     private Destination? FindDestination(string destinationName)

@@ -2,6 +2,8 @@ namespace TravelAgencyService.Services;
 
 public class ConsoleService
 {
+    private InputValidationService _inputValidator;
+
     public string? GetChoice()
     {
         DisplayMenu();
@@ -14,12 +16,18 @@ public class ConsoleService
         return Console.ReadLine();
     }
 
+    public int GetQty()
+    {
+        _inputValidator = new InputValidationService();
+        return _inputValidator.GetValidatedIntegerInput("Enter the common qty: ");
+    }
+
     public void ShowMessage(string message)
     {
         Console.WriteLine(message);
     }
 
-    public void ShowBookings(List<Destination?> bookings)
+    public void ShowBookings(Dictionary<string, int> bookings)
     {
         if (bookings.Count == 0)
         {
@@ -28,11 +36,10 @@ public class ConsoleService
         else
         {
             ShowMessage("Current reservations:");
-            foreach (var destination in bookings)
+            foreach (var booking in bookings)
             {
-                if (destination != null)
-                    ShowMessage($"{destination.Name}: {destination.CurrentBookings} destination(s) booked.");
-            }   
+                ShowMessage($"Country: {booking.Key}, Bookings: {booking.Value} destination(s) booked.");
+            }
         }
     }
     

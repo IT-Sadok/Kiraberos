@@ -19,9 +19,10 @@ public class AgencyOperationsService
         while (retryAttempts < maxRetryAttempts)
         {
             var destination = _consoleService.GetDestination();
+            var qty = _consoleService.GetQty();
             try
             {
-                if (destination != null) travelAgency.BookTicket(destination);
+                if (destination != null) travelAgency.BookTicket(destination, qty);
                 _consoleService.ShowMessage("Booking is successful.");
                 break;
             }
@@ -44,7 +45,8 @@ public class AgencyOperationsService
     public void CancelBooking(AgencyModel travelAgency)
     {
         var destination = _consoleService.GetDestination();
-        _consoleService.ShowMessage(destination != null && travelAgency.CancelBooking(destination)
+        var qty = _consoleService.GetQty();
+        _consoleService.ShowMessage(destination != null && travelAgency.CancelBooking(destination, qty)
             ? "Reservation canceled."
             : "Reservation(s) not found.");
     }
