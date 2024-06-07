@@ -33,7 +33,7 @@ class TravelAgency: AbstractTravelAgency
                     exit = true;
                     break;
                 default:
-                    Console.WriteLine("Wrong choice. Please try again");
+                    _consoleService.ShowMessage("Wrong choice. Please try again");
                     break;
             }
         }
