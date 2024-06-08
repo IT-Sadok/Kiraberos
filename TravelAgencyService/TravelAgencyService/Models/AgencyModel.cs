@@ -23,7 +23,7 @@ public class AgencyModel
             {
                 throw new InvalidDestinationException("Wrong destination. Please, choose the right one.");
             }
-            _jsonServiceManager.SaveBookingToJson(destination, qty, true); 
+            BeforeSaveBooking(destination, qty, true); 
     }
 
     public bool CancelBooking(string destinationName, int qty)
@@ -33,7 +33,7 @@ public class AgencyModel
         {
             return false;
         }
-        _jsonServiceManager.SaveBookingToJson(destination, qty, false);
+        BeforeSaveBooking(destination, qty, false);
         return true;
     }
 
@@ -45,5 +45,43 @@ public class AgencyModel
     private Destination? FindDestination(string destinationName)
     {
         return _destinations.FirstOrDefault(d => d != null && d.Name.Equals(destinationName, StringComparison.OrdinalIgnoreCase));
+    }
+    
+    private void BeforeSaveBooking(Destination destination, int qty, bool isAdd)
+    {
+        var bookings = _jsonServiceManager.LoadBookings();
+        ValidateBookings(bookings, destination, qty,  isAdd);
+        _jsonServiceManager.SaveBookingsToFile(bookings);
+    }
+    
+    private void ValidateBookings(Dictionary<string, int> bookings, Destination destination, int qty, bool isAdd)
+    {
+        if (!bookings.TryGetValue(destination.Name, out var currentQty))
+        {
+            ValidateNewBooking(destination, qty);
+            bookings[destination.Name] = qty;
+        }
+        else
+        {
+            ValidateExistingBooking(destination, qty, currentQty, isAdd);
+            bookings[destination.Name] = isAdd ? currentQty + qty : currentQty - qty;
+        }
+    }
+
+    private void ValidateNewBooking(Destination destination, int qty)
+    {
+        if (qty > destination.MaxBookings)
+        {
+            throw new InvalidDestinationException("There are no available reservations for this trip. Please, try again later.");
+        }
+    }
+
+    private void ValidateExistingBooking(Destination destination, int qty, int currentQty, bool isAdd)
+    {
+        var newQty = isAdd ? currentQty + qty : currentQty - qty;
+        if (newQty < 0 || newQty > destination.MaxBookings)
+        {
+            throw new InvalidDestinationException("There are no available reservations for this trip. Please, try again later.");
+        }
     }
 }
