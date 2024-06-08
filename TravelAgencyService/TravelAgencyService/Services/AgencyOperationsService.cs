@@ -26,9 +26,9 @@ public class AgencyOperationsService
                 _consoleService.ShowMessage("Booking is successful.");
                 break;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                _consoleService.ShowMessage($"Attempt {retryAttempts + 1} failed: {ex.Message}");
+                _consoleService.ShowMessage($"Attempt {retryAttempts + 1} failed: {exception.Message}");
                 retryAttempts++;
                 if (retryAttempts < maxRetryAttempts)
                 {
@@ -46,9 +46,17 @@ public class AgencyOperationsService
     {
         var destination = _consoleService.GetDestination();
         var qty = _consoleService.GetQty();
-        _consoleService.ShowMessage(destination != null && travelAgency.CancelBooking(destination, qty)
-            ? "Reservation canceled."
-            : "Reservation(s) not found.");
+        try
+        {
+            _consoleService.ShowMessage(destination != null && travelAgency.CancelBooking(destination, qty)
+                ? "Reservation canceled."
+                : "Reservation(s) not found.");
+        }
+        catch (Exception exception)
+        {
+            _consoleService.ShowMessage(exception.Message);
+        }
+     
     }
 
     public void DisplayBookings(AgencyModel travelAgency)
