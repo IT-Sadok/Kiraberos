@@ -37,9 +37,16 @@ public class AgencyModel
         return true;
     }
 
-    public Dictionary<string, int> GetAllBookings()
+    public Dictionary<string, BookingInfo> GetAllBookings()
     {
         return _jsonServiceManager.LoadBookings();
+    }
+    
+    public Dictionary<string, BookingInfo> GetAllBookingsByDate(DateTime date)
+    {
+        return _jsonServiceManager.LoadBookings()
+            .Where(booking => booking.Value.BookingDate.Date == date.Date)
+            .ToDictionary(booking => booking.Key, booking => booking.Value);
     }
     
     private void BeforeSaveBooking(Destination destination, int qty, bool isAdd)
@@ -49,16 +56,29 @@ public class AgencyModel
         _jsonServiceManager.SaveBookingsToFile(bookings);
     }
 
-    private void ValidateBookings(Dictionary<string, int> bookings, Destination destination, int qty, bool isAdd)
+    private void ValidateBookings(Dictionary<string, BookingInfo> bookings, Destination destination, int qty, bool isAdd)
     {
-        var currentQty = bookings.GetValueOrDefault(destination.Name, 0);
-        var newQty = isAdd ? currentQty + qty : currentQty - qty;
-        if (newQty < 0 || newQty > destination.MaxBookings)
+        var currentQty = bookings.GetValueOrDefault(destination.Name, new BookingInfo());
+        var date = DateTime.UtcNow;
+        var newQty = isAdd ? currentQty.Quantity + qty : currentQty.Quantity - qty;
+        
+        if (newQty > destination.MaxBookings)
         {
             throw new InvalidDestinationException("There are no available reservations for this trip, or you haven't booked anything yet. Please, try again later.");
         }
 
-        bookings[destination.Name] = newQty;
+        if (newQty <= 0)
+        {
+            bookings.Remove(destination.Name);
+        }
+        else
+        {
+            bookings[destination.Name] = new BookingInfo
+            {
+                Quantity = newQty,
+                BookingDate = date
+            };   
+        }
     }
     
     private Destination? FindDestination(string destinationName)

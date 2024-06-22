@@ -10,6 +10,7 @@ public class AgencyOperationsService
     {
         _consoleService = consoleService;
     }
+    
     public void BookTicket(AgencyModel travelAgency)
     {
         const int maxRetryAttempts = 3;
@@ -62,6 +63,13 @@ public class AgencyOperationsService
     public void DisplayBookings(AgencyModel travelAgency)
     {
         var bookings = travelAgency.GetAllBookings();
+        _consoleService.ShowBookings(bookings);
+    }
+    
+    public void DisplayBookingsByDate(AgencyModel travelAgency)
+    {
+        var date = _consoleService.GetDate();
+        var bookings = travelAgency.GetAllBookingsByDate(date);
         _consoleService.ShowBookings(bookings);
     }
 }

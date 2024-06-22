@@ -30,6 +30,9 @@ class TravelAgency: AbstractTravelAgency
                     _agencyOperation.DisplayBookings(travelAgency);
                     break;
                 case "4":
+                    _agencyOperation.DisplayBookingsByDate(travelAgency);
+                    break;
+                case "5":
                     exit = true;
                     break;
                 default:

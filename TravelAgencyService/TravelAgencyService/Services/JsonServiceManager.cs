@@ -1,3 +1,5 @@
+using TravelAgencyService.Models;
+
 namespace TravelAgencyService.Services;
 using System.Text.Json;
 
@@ -7,18 +9,18 @@ public class JsonServiceManager
 
     private const string FilePath = "bookings.json";
     
-    public Dictionary<string, int> LoadBookings()
+    public Dictionary<string, BookingInfo> LoadBookings()
     {
         if (!File.Exists(FilePath))
         {
-            return new Dictionary<string, int>();
+            return new Dictionary<string, BookingInfo>();
         }
 
         var json = File.ReadAllText(FilePath);
-        return JsonSerializer.Deserialize<Dictionary<string, int>>(json) ?? new Dictionary<string, int>();
+        return JsonSerializer.Deserialize<Dictionary<string, BookingInfo>>(json) ?? new Dictionary<string, BookingInfo>();
     }
     
-    public void SaveBookingsToFile(Dictionary<string, int> bookings)
+    public void SaveBookingsToFile(Dictionary<string, BookingInfo> bookings)
     {
         var json = JsonSerializer.Serialize(bookings, _jsonOptions);
         File.WriteAllText(FilePath, json);
