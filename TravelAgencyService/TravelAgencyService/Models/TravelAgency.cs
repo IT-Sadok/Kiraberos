@@ -7,10 +7,17 @@ class TravelAgency: AbstractTravelAgency
 {
     private static ConsoleService? _consoleService;
     private AgencyOperationsService? _agencyOperation;
+    private readonly Dictionary<string, BookingInfo> _allBookings;
+    private readonly JsonServiceManager _jsonServiceManager = new();
+
+    public TravelAgency()
+    {
+        _allBookings = _jsonServiceManager.AllBookings;
+    }
 
     public override void Run()
     {
-        var travelAgency = new AgencyModel();
+        var travelAgency = new AgencyModel(_allBookings);
         var exit = false;
         _consoleService = new ConsoleService();
         _agencyOperation = new AgencyOperationsService(_consoleService);

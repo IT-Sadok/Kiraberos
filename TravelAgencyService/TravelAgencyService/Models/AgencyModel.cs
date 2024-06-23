@@ -2,8 +2,10 @@ using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
 
-public class AgencyModel
+public class AgencyModel(Dictionary<string, BookingInfo> allBookings)
 {
+    private readonly JsonServiceManager _jsonServiceManager = new();
+
     private readonly List<Destination?> _destinations =
     [
         new Destination("Spain", 5),
@@ -12,8 +14,6 @@ public class AgencyModel
         new Destination("Norway", 2),
         new Destination("New Zealand", 3)
     ];
-
-    private readonly JsonServiceManager _jsonServiceManager = new();
 
     public void BookTicket(string destinationName, int qty)
     {
@@ -35,18 +35,6 @@ public class AgencyModel
         }
         BeforeSaveBooking(destination, qty, false);
         return true;
-    }
-
-    public Dictionary<string, BookingInfo> GetAllBookings()
-    {
-        return _jsonServiceManager.LoadBookings();
-    }
-    
-    public Dictionary<string, BookingInfo> GetAllBookingsByDate(DateTime date)
-    {
-        return _jsonServiceManager.LoadBookings()
-            .Where(booking => booking.Value.BookingDate.Date == date.Date)
-            .ToDictionary(booking => booking.Key, booking => booking.Value);
     }
     
     private void BeforeSaveBooking(Destination destination, int qty, bool isAdd)
@@ -84,5 +72,17 @@ public class AgencyModel
     private Destination? FindDestination(string destinationName)
     {
         return _destinations.FirstOrDefault(d => d != null && d.Name.Equals(destinationName, StringComparison.OrdinalIgnoreCase));
+    }
+    
+       public Dictionary<string, BookingInfo> GetAllBookings()
+    {
+        return allBookings;
+    }
+    
+    public Dictionary<string, BookingInfo> GetAllBookingsByDate(DateTime date)
+    {
+        return GetAllBookings()
+            .Where(booking => booking.Value.BookingDate.Date == date.Date)
+            .ToDictionary(booking => booking.Key, booking => booking.Value);
     }
 }

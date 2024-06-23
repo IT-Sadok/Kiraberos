@@ -6,10 +6,16 @@ using System.Text.Json;
 public class JsonServiceManager
 {
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
+    public readonly Dictionary<string, BookingInfo> AllBookings;
+
+    public JsonServiceManager()
+    {
+        AllBookings = LoadBookings();
+    }
 
     private const string FilePath = "bookings.json";
     
-    public Dictionary<string, BookingInfo> LoadBookings()
+    private Dictionary<string, BookingInfo> LoadBookings()
     {
         if (!File.Exists(FilePath))
         {
