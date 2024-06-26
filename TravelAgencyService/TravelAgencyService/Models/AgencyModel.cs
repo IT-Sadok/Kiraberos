@@ -1,11 +1,10 @@
+using TravelAgencyService.Interfaces;
 using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
 
-public class AgencyModel(Dictionary<string, BookingInfo> allBookings)
+public class AgencyModel(IBookingHandler bookingHandler, Dictionary<string, BookingInfo> allBookings)
 {
-    private readonly JsonServiceManager _jsonServiceManager = new();
-
     private readonly List<Destination?> _destinations =
     [
         new Destination("Spain", 5),
@@ -23,7 +22,7 @@ public class AgencyModel(Dictionary<string, BookingInfo> allBookings)
             {
                 throw new InvalidDestinationException("Wrong destination. Please, choose the right one.");
             }
-            BeforeSaveBooking(destination, qty, true); 
+            bookingHandler.BeforeSaveBookingToJson(destination, qty, true, allBookings); 
     }
 
     public bool CancelBooking(string destinationName, int qty)
@@ -33,40 +32,8 @@ public class AgencyModel(Dictionary<string, BookingInfo> allBookings)
         {
             return false;
         }
-        BeforeSaveBooking(destination, qty, false);
+        bookingHandler.BeforeSaveBookingToJson(destination, qty, false, allBookings); 
         return true;
-    }
-    
-    private void BeforeSaveBooking(Destination destination, int qty, bool isAdd)
-    {
-        var bookings = GetAllBookings();
-        ValidateBookings(bookings, destination, qty,  isAdd);
-        _jsonServiceManager.SaveBookingsToFile(bookings);
-    }
-
-    private void ValidateBookings(Dictionary<string, BookingInfo> bookings, Destination destination, int qty, bool isAdd)
-    {
-        var currentQty = bookings.GetValueOrDefault(destination.Name, new BookingInfo());
-        var date = DateTime.UtcNow;
-        var newQty = isAdd ? currentQty.Quantity + qty : currentQty.Quantity - qty;
-        
-        if (newQty > destination.MaxBookings)
-        {
-            throw new InvalidDestinationException("There are no available reservations for this trip, or you haven't booked anything yet. Please, try again later.");
-        }
-
-        if (newQty <= 0)
-        {
-            bookings.Remove(destination.Name);
-        }
-        else
-        {
-            bookings[destination.Name] = new BookingInfo
-            {
-                Quantity = newQty,
-                BookingDate = date
-            };   
-        }
     }
     
     private Destination? FindDestination(string destinationName)

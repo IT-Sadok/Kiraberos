@@ -1,4 +1,6 @@
 using TravelAgencyService.AbstractClasses;
+using TravelAgencyService.Decorators;
+using TravelAgencyService.Interfaces;
 using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
@@ -8,16 +10,17 @@ class TravelAgency: AbstractTravelAgency
     private static ConsoleService? _consoleService;
     private AgencyOperationsService? _agencyOperation;
     private readonly Dictionary<string, BookingInfo> _allBookings;
-    private readonly JsonServiceManager _jsonServiceManager = new();
+    private static readonly JsonServiceManager JsonServiceManager = new();
+    private readonly IBookingHandler _bookingHandler = new BookingHandlerDecorator(JsonServiceManager);
 
     public TravelAgency()
     {
-        _allBookings = _jsonServiceManager.AllBookings;
+        _allBookings = JsonServiceManager.AllBookings;
     }
 
     public override void Run()
     {
-        var travelAgency = new AgencyModel(_allBookings);
+        var travelAgency = new AgencyModel(_bookingHandler, _allBookings);
         var exit = false;
         _consoleService = new ConsoleService();
         _agencyOperation = new AgencyOperationsService(_consoleService);
