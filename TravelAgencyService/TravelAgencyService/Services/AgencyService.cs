@@ -1,14 +1,14 @@
+using System.Text.Json;
 using TravelAgencyService.Models;
 
 namespace TravelAgencyService.Services;
-using System.Text.Json;
 
-public class JsonServiceManager
+public class AgencyService
 {
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
     public readonly Dictionary<string, BookingInfo> AllBookings;
 
-    public JsonServiceManager()
+    public AgencyService()
     {
         AllBookings = LoadBookings();
     }

@@ -6,17 +6,12 @@ namespace TravelAgencyService.Decorators;
 
 public class BookingHandlerDecorator: IBookingHandler
 {
-    private readonly JsonServiceManager _jsonServiceManager;
-
-    public BookingHandlerDecorator(JsonServiceManager jsonServiceManager)
-    {
-        _jsonServiceManager = jsonServiceManager;
-    }
-
+    private readonly AgencyService _agencyService = new();
+    
     public void BeforeSaveBookingToJson(Destination destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
     {
         ValidateBookings(bookings, destination, qty, isAdd);
-        _jsonServiceManager.SaveBookingsToFile(bookings);
+        _agencyService.SaveBookingsToFile(bookings);
     }
 
     private void ValidateBookings(Dictionary<string, BookingInfo> bookings, Destination destination, int qty, bool isAdd)
