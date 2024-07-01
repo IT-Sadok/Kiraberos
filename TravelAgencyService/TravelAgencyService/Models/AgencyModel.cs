@@ -4,7 +4,7 @@ using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
 
-public class AgencyModel(ConsoleService consoleService, Dictionary<string, BookingInfo> allBookings) : IBookingHandler
+public class AgencyModel(ConsoleService consoleService, Dictionary<string, BookingInfo> allBookings) : IAgency
 {
     private readonly List<Destination?> _destinations =
     [
@@ -46,17 +46,6 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
             }   
         }
     }
-
-    private void HandleBooking(string destinationName, int qty)
-    {
-        var destination = FindDestination(destinationName);
-
-            if (destination == null)
-            {
-                throw new InvalidDestinationException("Wrong destination. Please, choose the right one.");
-            }
-            BeforeSaveBookingToJson(destination, qty, true, allBookings); 
-    }
     
     public void CancelBooking()
     {
@@ -74,16 +63,37 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
         }
      
     }
-
-    private bool HandleCanceling(string destinationName, int qty)
+    
+    public void Book(Destination destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
     {
-        var destination = FindDestination(destinationName);
-        if (destination == null)
+        IAgency agencyDecorator = new AgencyDecorator();
+        ValidateBookings(bookings, destination, qty,  isAdd);
+        agencyDecorator.Book(destination, qty, isAdd, bookings);
+    }
+    
+    private void ValidateBookings(Dictionary<string, BookingInfo> bookings, Destination destination, int qty, bool isAdd)
+    {
+        var currentQty = bookings.GetValueOrDefault(destination.Name, new BookingInfo());
+        var date = DateTime.UtcNow;
+        var newQty = isAdd ? currentQty.Quantity + qty : currentQty.Quantity - qty;
+        
+        if (newQty > destination.MaxBookings)
         {
-            return false;
+            throw new InvalidDestinationException("There are no available reservations for this trip, or you haven't booked anything yet. Please, try again later.");
         }
-        BeforeSaveBookingToJson(destination, qty, false, allBookings); 
-        return true;
+
+        if (newQty <= 0)
+        {
+            bookings.Remove(destination.Name);
+        }
+        else
+        {
+            bookings[destination.Name] = new BookingInfo
+            {
+                Quantity = newQty,
+                BookingDate = date
+            };   
+        }
     }
     
     public void DisplayBookings()
@@ -97,6 +107,28 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
         var date = consoleService.GetDate();
         var bookings = GetAllBookingsByDate(date);
         consoleService.ShowBookings(bookings);
+    }
+
+    private void HandleBooking(string destinationName, int qty)
+    {
+        var destination = FindDestination(destinationName);
+
+            if (destination == null)
+            {
+                throw new InvalidDestinationException("Wrong destination. Please, choose the right one.");
+            }
+            Book(destination, qty, true, allBookings); 
+    }
+    
+    private bool HandleCanceling(string destinationName, int qty)
+    {
+        var destination = FindDestination(destinationName);
+        if (destination == null)
+        {
+            return false;
+        }
+        Book(destination, qty, false, allBookings); 
+        return true;
     }
     
     private Destination? FindDestination(string destinationName)
@@ -114,11 +146,5 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
         return GetAllBookings()
             .Where(booking => booking.Value.BookingDate.Date == date.Date)
             .ToDictionary(booking => booking.Key, booking => booking.Value);
-    }
-
-    public void BeforeSaveBookingToJson(Destination destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
-    {
-        var agencyService = new BookingHandlerDecorator();
-        agencyService.BeforeSaveBookingToJson(destination, qty, isAdd, bookings);
     }
 }
