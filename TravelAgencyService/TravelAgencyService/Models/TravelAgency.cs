@@ -1,19 +1,26 @@
 using TravelAgencyService.AbstractClasses;
+using TravelAgencyService.Decorators;
+using TravelAgencyService.Interfaces;
 using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
 
 class TravelAgency: AbstractTravelAgency
 {
-    private static ConsoleService? _consoleService;
-    private AgencyOperationsService? _agencyOperation;
+    private ConsoleService _consoleService = new();
+    private readonly AgencyService _agencyService = new();
+    private readonly Dictionary<string, BookingInfo> _allBookings;
+
+    public TravelAgency()
+    {
+        _allBookings = _agencyService.AllBookings;
+    }
 
     public override void Run()
     {
-        var travelAgency = new AgencyModel();
+        var travelAgency = new AgencyModel(_consoleService, _allBookings);
         var exit = false;
         _consoleService = new ConsoleService();
-        _agencyOperation = new AgencyOperationsService(_consoleService);
 
         while (!exit)
         {
@@ -21,19 +28,22 @@ class TravelAgency: AbstractTravelAgency
             switch (choice)
             {
                 case "1":
-                   _agencyOperation.BookTicket(travelAgency);
+                   travelAgency.BookTicket();
                     break;
                 case "2":
-                    _agencyOperation.CancelBooking(travelAgency);
+                    travelAgency.CancelBooking();
                     break;
                 case "3":
-                    _agencyOperation.DisplayBookings(travelAgency);
+                    travelAgency.DisplayBookings();
                     break;
                 case "4":
+                    travelAgency.DisplayBookingsByDate();
+                    break;
+                case "5":
                     exit = true;
                     break;
                 default:
-                    Console.WriteLine("Wrong choice. Please try again");
+                    _consoleService.ShowMessage("Wrong choice. Please try again");
                     break;
             }
         }
