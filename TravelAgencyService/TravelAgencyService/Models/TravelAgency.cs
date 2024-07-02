@@ -1,4 +1,6 @@
 using TravelAgencyService.AbstractClasses;
+using TravelAgencyService.Decorators;
+using TravelAgencyService.Interfaces;
 using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
@@ -17,25 +19,31 @@ class TravelAgency: AbstractTravelAgency
     public override void Run()
     {
         var travelAgency = new AgencyModel(_allBookings);
+        IAgency decoratedAgency = new AgencyDecorator(travelAgency);
         var exit = false;
         _consoleService = new ConsoleService();
 
         while (!exit)
         {
             var choice = _consoleService.GetChoice();
+            
             switch (choice)
             {
                 case "1":
-                   travelAgency.BookTicket();
+                    var bookingDestination = travelAgency.FindDestination(_consoleService.GetDestination());
+                    var bookingQty = _consoleService.GetQty();
+                    decoratedAgency.Book(bookingDestination, bookingQty, true, _allBookings);
                     break;
                 case "2":
-                    travelAgency.CancelBooking();
+                    var cancelDestination = travelAgency.FindDestination(_consoleService.GetDestination());
+                    var cancelQty = _consoleService.GetQty();
+                    decoratedAgency.Book(cancelDestination, cancelQty, false, _allBookings);
                     break;
                 case "3":
-                    travelAgency.DisplayBookings();
+                    decoratedAgency.DisplayBookings();
                     break;
                 case "4":
-                    travelAgency.DisplayBookingsByDate();
+                    decoratedAgency.DisplayBookingsByDate();
                     break;
                 case "5":
                     exit = true;

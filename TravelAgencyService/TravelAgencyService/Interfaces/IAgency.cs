@@ -5,5 +5,7 @@ namespace TravelAgencyService.Interfaces;
 
 public interface IAgency
 {
-    void Book(Destination destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings);
+    void Book(Destination? destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings);
+    void DisplayBookings();
+    void DisplayBookingsByDate();
 }

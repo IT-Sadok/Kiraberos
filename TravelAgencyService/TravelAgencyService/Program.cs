@@ -2,7 +2,7 @@ using TravelAgencyService.Models;
 
 namespace TravelAgencyService;
 
-public class Run
+public class Program
 {
     private static TravelAgency _programm;
 

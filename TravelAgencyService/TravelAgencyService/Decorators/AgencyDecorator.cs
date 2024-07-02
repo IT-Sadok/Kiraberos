@@ -9,14 +9,33 @@ public class AgencyDecorator: IAgency
     private readonly FileService _fileService = new();
     private readonly AgencyModel _agencyModel;
 
-    public AgencyDecorator()
+    public AgencyDecorator(AgencyModel agencyModel)
     {
-        _agencyModel = new AgencyModel(_fileService.AllBookings);
+        _agencyModel = agencyModel;
     }
     
-    public void Book(Destination destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
+    public void Book(Destination? destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
     {
+        
+        if (isAdd)
+        {
+            _agencyModel.BookTicket(destination, qty);
+        }
+        else
+        {
+            _agencyModel.CancelBooking(destination, qty);
+        }
         _agencyModel.Book(destination, qty, isAdd, bookings);
         _fileService.SaveBookingsToFile(bookings);
+    }
+    
+    public void DisplayBookings()
+    {
+        _agencyModel.DisplayBookings();
+    }
+
+    public void DisplayBookingsByDate()
+    {
+        _agencyModel.DisplayBookingsByDate();
     }
 }

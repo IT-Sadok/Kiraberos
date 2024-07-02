@@ -1,4 +1,3 @@
-using TravelAgencyService.Decorators;
 using TravelAgencyService.Interfaces;
 using TravelAgencyService.Services;
 
@@ -17,7 +16,7 @@ public class AgencyModel(Dictionary<string, BookingInfo> allBookings) : IAgency
         new Destination("New Zealand", 3)
     ];
     
-    public void BookTicket()
+    public void BookTicket(Destination? destination, int qty)
     {
         const int maxRetryAttempts = 3;
         const int delayMilliseconds = 1000;
@@ -25,11 +24,9 @@ public class AgencyModel(Dictionary<string, BookingInfo> allBookings) : IAgency
 
         while (retryAttempts < maxRetryAttempts)
         {
-            var destination = _consoleService.GetDestination();
-            var qty = _consoleService.GetQty();
             try
             {
-                if (destination != null) HandleBooking(destination, qty);
+                HandleBooking(destination, qty);
                 _consoleService.ShowMessage("Booking is successful.");
                 break;
             }
@@ -49,10 +46,8 @@ public class AgencyModel(Dictionary<string, BookingInfo> allBookings) : IAgency
         }
     }
     
-    public void CancelBooking()
+    public void CancelBooking(Destination? destination, int qty)
     {
-        var destination = _consoleService.GetDestination();
-        var qty = _consoleService.GetQty();
         try
         {
             _consoleService.ShowMessage(destination != null && HandleCanceling(destination, qty)
@@ -65,9 +60,17 @@ public class AgencyModel(Dictionary<string, BookingInfo> allBookings) : IAgency
         }
     }
     
-    public void Book(Destination destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
+    public void Book(Destination? destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
     {
-        ValidateBookings(bookings, destination, qty, isAdd);
+        if (destination != null)
+            try
+            {
+                ValidateBookings(bookings, destination, qty, isAdd);
+            }
+            catch (Exception exception)
+            {
+                _consoleService.ShowMessage(exception.Message);
+            }
     }
     
     private void ValidateBookings(Dictionary<string, BookingInfo> bookings, Destination destination, int qty, bool isAdd)
@@ -108,31 +111,25 @@ public class AgencyModel(Dictionary<string, BookingInfo> allBookings) : IAgency
         _consoleService.ShowBookings(bookings);
     }
 
-    private void HandleBooking(string destinationName, int qty)
+    private void HandleBooking(Destination? destination, int qty)
     {
-        var destination = FindDestination(destinationName);
 
-            if (destination == null)
-            {
-                throw new InvalidDestinationException("Wrong destination. Please, choose the right one.");
-            }
-            IAgency agency = new AgencyDecorator();
-            agency.Book(destination, qty, true, allBookings);
+        if (destination == null)
+        {
+            throw new InvalidDestinationException("Wrong destination. Please, choose the right one.");
+        }
     }
     
-    private bool HandleCanceling(string destinationName, int qty)
+    private bool HandleCanceling(Destination? destination, int qty)
     {
-        var destination = FindDestination(destinationName);
         if (destination == null)
         {
             return false;
         }
-        IAgency agency = new AgencyDecorator();
-        agency.Book(destination, qty, false, allBookings);
         return true;
     }
     
-    private Destination? FindDestination(string destinationName)
+    public Destination? FindDestination(string? destinationName)
     {
         return _destinations.FirstOrDefault(d => d != null && d.Name.Equals(destinationName, StringComparison.OrdinalIgnoreCase));
     }
