@@ -4,8 +4,10 @@ using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
 
-public class AgencyModel(ConsoleService consoleService, Dictionary<string, BookingInfo> allBookings) : IAgency
+public class AgencyModel(Dictionary<string, BookingInfo> allBookings) : IAgency
 {
+    private readonly ConsoleService _consoleService = new();
+
     private readonly List<Destination?> _destinations =
     [
         new Destination("Spain", 5),
@@ -14,7 +16,7 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
         new Destination("Norway", 2),
         new Destination("New Zealand", 3)
     ];
-
+    
     public void BookTicket()
     {
         const int maxRetryAttempts = 3;
@@ -23,17 +25,17 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
 
         while (retryAttempts < maxRetryAttempts)
         {
-            var destination = consoleService.GetDestination();
-            var qty = consoleService.GetQty();
+            var destination = _consoleService.GetDestination();
+            var qty = _consoleService.GetQty();
             try
             {
                 if (destination != null) HandleBooking(destination, qty);
-                consoleService.ShowMessage("Booking is successful.");
+                _consoleService.ShowMessage("Booking is successful.");
                 break;
             }
             catch (Exception exception)
             {
-                consoleService.ShowMessage($"Attempt {retryAttempts + 1} failed: {exception.Message}");
+                _consoleService.ShowMessage($"Attempt {retryAttempts + 1} failed: {exception.Message}");
                 retryAttempts++;
                 if (retryAttempts < maxRetryAttempts)
                 {
@@ -41,7 +43,7 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
                 }
                 else
                 {
-                    consoleService.ShowMessage("All attempts failed. Booking was not successful.");
+                    _consoleService.ShowMessage("All attempts failed. Booking was not successful.");
                 }
             }   
         }
@@ -49,26 +51,23 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
     
     public void CancelBooking()
     {
-        var destination = consoleService.GetDestination();
-        var qty = consoleService.GetQty();
+        var destination = _consoleService.GetDestination();
+        var qty = _consoleService.GetQty();
         try
         {
-            consoleService.ShowMessage(destination != null && HandleCanceling(destination, qty)
+            _consoleService.ShowMessage(destination != null && HandleCanceling(destination, qty)
                 ? "Reservation canceled."
                 : "Reservation(s) not found.");
         }
         catch (Exception exception)
         {
-            consoleService.ShowMessage(exception.Message);
+            _consoleService.ShowMessage(exception.Message);
         }
-     
     }
     
     public void Book(Destination destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
     {
-        IAgency agencyDecorator = new AgencyDecorator();
-        ValidateBookings(bookings, destination, qty,  isAdd);
-        agencyDecorator.Book(destination, qty, isAdd, bookings);
+        ValidateBookings(bookings, destination, qty, isAdd);
     }
     
     private void ValidateBookings(Dictionary<string, BookingInfo> bookings, Destination destination, int qty, bool isAdd)
@@ -99,14 +98,14 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
     public void DisplayBookings()
     {
         var bookings = GetAllBookings();
-        consoleService.ShowBookings(bookings);
+        _consoleService.ShowBookings(bookings);
     }
     
     public void DisplayBookingsByDate()
     {
-        var date = consoleService.GetDate();
+        var date = _consoleService.GetDate();
         var bookings = GetAllBookingsByDate(date);
-        consoleService.ShowBookings(bookings);
+        _consoleService.ShowBookings(bookings);
     }
 
     private void HandleBooking(string destinationName, int qty)
@@ -117,7 +116,8 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
             {
                 throw new InvalidDestinationException("Wrong destination. Please, choose the right one.");
             }
-            Book(destination, qty, true, allBookings); 
+            IAgency agency = new AgencyDecorator();
+            agency.Book(destination, qty, true, allBookings);
     }
     
     private bool HandleCanceling(string destinationName, int qty)
@@ -127,7 +127,8 @@ public class AgencyModel(ConsoleService consoleService, Dictionary<string, Booki
         {
             return false;
         }
-        Book(destination, qty, false, allBookings); 
+        IAgency agency = new AgencyDecorator();
+        agency.Book(destination, qty, false, allBookings);
         return true;
     }
     

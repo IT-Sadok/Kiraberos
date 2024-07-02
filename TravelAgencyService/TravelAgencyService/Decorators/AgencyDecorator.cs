@@ -6,10 +6,17 @@ namespace TravelAgencyService.Decorators;
 
 public class AgencyDecorator: IAgency
 {
-    private readonly AgencyService _agencyService = new();
+    private readonly FileService _fileService = new();
+    private readonly AgencyModel _agencyModel;
+
+    public AgencyDecorator()
+    {
+        _agencyModel = new AgencyModel(_fileService.AllBookings);
+    }
     
     public void Book(Destination destination, int qty, bool isAdd, Dictionary<string, BookingInfo> bookings)
     {
-        _agencyService.SaveBookingsToFile(bookings);
+        _agencyModel.Book(destination, qty, isAdd, bookings);
+        _fileService.SaveBookingsToFile(bookings);
     }
 }

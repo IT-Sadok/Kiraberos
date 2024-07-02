@@ -1,4 +1,4 @@
-namespace TravelAgencyService.Services;
+namespace TravelAgencyService.Models;
 
     public class Destination
     {

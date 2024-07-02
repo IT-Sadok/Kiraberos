@@ -1,6 +1,4 @@
 using TravelAgencyService.AbstractClasses;
-using TravelAgencyService.Decorators;
-using TravelAgencyService.Interfaces;
 using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
@@ -8,17 +6,17 @@ namespace TravelAgencyService.Models;
 class TravelAgency: AbstractTravelAgency
 {
     private ConsoleService _consoleService = new();
-    private readonly AgencyService _agencyService = new();
+    private readonly FileService _fileService = new();
     private readonly Dictionary<string, BookingInfo> _allBookings;
 
     public TravelAgency()
     {
-        _allBookings = _agencyService.AllBookings;
+        _allBookings = _fileService.AllBookings;
     }
 
     public override void Run()
     {
-        var travelAgency = new AgencyModel(_consoleService, _allBookings);
+        var travelAgency = new AgencyModel(_allBookings);
         var exit = false;
         _consoleService = new ConsoleService();
 
