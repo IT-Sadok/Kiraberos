@@ -1,39 +1,55 @@
 using TravelAgencyService.AbstractClasses;
+using TravelAgencyService.Decorators;
+using TravelAgencyService.Interfaces;
 using TravelAgencyService.Services;
 
 namespace TravelAgencyService.Models;
 
 class TravelAgency: AbstractTravelAgency
 {
-    private static ConsoleService? _consoleService;
-    private AgencyOperationsService? _agencyOperation;
+    private ConsoleService _consoleService = new();
+    private readonly FileService _fileService = new();
+    private readonly Dictionary<string, BookingInfo> _allBookings;
+
+    public TravelAgency()
+    {
+        _allBookings = _fileService.AllBookings;
+    }
 
     public override void Run()
     {
-        var travelAgency = new AgencyModel();
+        var travelAgency = new AgencyModel(_allBookings);
+        IAgency decoratedAgency = new AgencyDecorator(travelAgency);
         var exit = false;
         _consoleService = new ConsoleService();
-        _agencyOperation = new AgencyOperationsService(_consoleService);
 
         while (!exit)
         {
             var choice = _consoleService.GetChoice();
+            
             switch (choice)
             {
                 case "1":
-                   _agencyOperation.BookTicket(travelAgency);
+                    var bookingDestination = travelAgency.FindDestination(_consoleService.GetDestination());
+                    var bookingQty = _consoleService.GetQty();
+                    decoratedAgency.Book(bookingDestination, bookingQty, true, _allBookings);
                     break;
                 case "2":
-                    _agencyOperation.CancelBooking(travelAgency);
+                    var cancelDestination = travelAgency.FindDestination(_consoleService.GetDestination());
+                    var cancelQty = _consoleService.GetQty();
+                    decoratedAgency.Book(cancelDestination, cancelQty, false, _allBookings);
                     break;
                 case "3":
-                    _agencyOperation.DisplayBookings(travelAgency);
+                    decoratedAgency.DisplayBookings();
                     break;
                 case "4":
+                    decoratedAgency.DisplayBookingsByDate();
+                    break;
+                case "5":
                     exit = true;
                     break;
                 default:
-                    Console.WriteLine("Wrong choice. Please try again");
+                    _consoleService.ShowMessage("Wrong choice. Please try again");
                     break;
             }
         }
