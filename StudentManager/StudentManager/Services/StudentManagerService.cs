@@ -7,48 +7,39 @@ namespace StudentManager.Services;
 public class StudentManagerService
 {
     private readonly ConcurrentDictionary<int, Student> _students = new();
-    private static SemaphoreSlim _semaphoreSlim = new(1, 1);
     private FileManager _fileManager = new();
 
     public async Task PopulateDataAsync(int numberOfStudents, ConcurrentDictionary<int, Student> students)
     {
-        await _semaphoreSlim.WaitAsync();
-        try
+        var random = new Random();
+        var courseNames = new[] { "Math", "English", "Science", "History", "Art", "Music" };
+        for (var i = 1; i <= numberOfStudents; i++)
         {
-            var random = new Random();
-            var courseNames = new[] { "Math", "English", "Science", "History", "Art", "Music" };
-            for (var i = 1; i <= numberOfStudents; i++)
+            var student = new Student
             {
-                var student = new Student
-                {
-                    Id = i,
-                    Name = $"Student {i}",
-                    Age = random.Next(18, 50),
-                    Courses =
-                    [
-                        new Course
-                        {
-                            CourseId = 1,
-                            CourseName = courseNames[random.Next(0, courseNames.Length)],
-                            Credits = random.Next(1, 5)
-                        },
+                Id = i,
+                Name = $"Student {i}",
+                Age = random.Next(18, 50),
+                Courses =
+                [
+                    new Course
+                    {
+                        CourseId = 1,
+                        CourseName = courseNames[random.Next(0, courseNames.Length)],
+                        Credits = random.Next(1, 5)
+                    },
 
-                        new Course
-                        {
-                            CourseId = 2,
-                            CourseName = courseNames[random.Next(0, courseNames.Length)],
-                            Credits = random.Next(1, 5)
-                        }
-                    ]
-                };
-                students.TryAdd(student.Id, student);
-            }
-            await _fileManager.SaveDataToFileAsync(students.Values, "data.json");
+                    new Course
+                    {
+                        CourseId = 2,
+                        CourseName = courseNames[random.Next(0, courseNames.Length)],
+                        Credits = random.Next(1, 5)
+                    }
+                ]
+            };
+            students.TryAdd(student.Id, student);
         }
-        finally
-        {
-            _semaphoreSlim.Release();
-        }
+        await _fileManager.SaveDataToFileAsync(students.Values, "data.json");
     }
     
     public async Task SimulateConcurrentUpdatesAsync(int numberOfUpdates)
@@ -58,27 +49,20 @@ public class StudentManagerService
 
         for (var i = 0; i < numberOfUpdates; i++)
         {
-            tasks.Add(Task.Run(async () =>
+            tasks.Add(Task.Run(() =>
             {
                 var studentId = random.Next(_students.Count);
                 if (_students.TryGetValue(studentId, out var student))
                 {
-                    await _semaphoreSlim.WaitAsync();
-                    try
+                    student.Age = random.Next(18, 25);
+                    student.Courses.Add(new Course
                     {
-                        student.Age = random.Next(18, 25);
-                        student.Courses.Add(new Course
-                        {
-                            CourseId = random.Next(100, 200),
-                            CourseName = $"Course {random.Next(1, 10)}",
-                            Credits = random.Next(1, 5)
-                        });
-                    }
-                    finally
-                    {
-                        _semaphoreSlim.Release();
-                    }
+                        CourseId = random.Next(100, 200),
+                        CourseName = $"Course {random.Next(1, 10)}",
+                        Credits = random.Next(1, 5)
+                    });
                 }
+                return Task.CompletedTask;
             }));
         }
         await Task.WhenAll(tasks);
