@@ -1,10 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using WebApiSolution.Models;
 
 namespace WebApiSolution.Data;
 
-public class ApplicationContext: DbContext
+public sealed class ApplicationContext: DbContext
 {
     public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
     {
+        Database.Migrate();
     }
+
+    public DbSet<Account> Accounts => Set<Account>();
 }
